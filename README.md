@@ -1,3 +1,4 @@
+[![Build Status](https://dev.azure.com/winlic/Space%20Game%20-%20web%20-%20Docker/_apis/build/status/Space%20Game%20-%20web%20-%20Docker-CI?branchName=devops)](https://dev.azure.com/winlic/Space%20Game%20-%20web%20-%20Docker/_build/latest?definitionId=18&branchName=devops)
 
 # Contributing
 

@@ -10,14 +10,12 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '4c054039-0f42-4254-9c4d-4fcb957ded83'
   webRepository: 'web'
-  containerRegistry: 'tailspinspacegame19130.azurecr.io'
-  dockerfilePath: '$(Build.SourcesDirectory)/Tailspin.SpaceGame.Web/Dockerfile'
+  dockerfilePath: '$(Build.SourcesDirectory)/Tailspin.SpaceGame.Web/'
   tag: '$(Build.BuildId)'
 
   # Agent VM image name
-  vmImageName: 'ubuntu-20.04'
+  #vmImageName: 'ubuntu-20.04'
 
 stages:
 - stage: Build
@@ -27,17 +25,27 @@ stages:
     displayName: Build
     pool:
       name: 'MyAgentPool'
+    variables:
+      - group: Release
     steps:
-    - task: Docker@2
-      displayName: Build and push an image to container registry
+
+    - task: DockerInstaller@0
+      displayName: Docker Installer
       inputs:
-        command: buildAndPush
-        buildContext: $(Build.Repository.LocalPath)
-        repository: $(webRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)
+        dockerVersion: 17.09.0-ce
+        releaseType: stable
+
+    - script: sudo /home/azureuser/azcreatecontainer.sh $(dockerfilePath) $(RegistryShortName) $(webRepository) $(tag) $(Build.Repository.LocalPath)
+      displayName: 'Build an Docker image'
+
+    - script: sudo /home/azureuser/azcontainerlogin.sh $(RegistryShortName) $(RegistryPass)
+      displayName: 'Login to Azure Container Registry'
+    
+    - script: sudo /home/azureuser/azpushcontainer.sh $(RegistryShortName) $(webRepository) $(tag)
+      displayName: 'Push Docker image to Azure Container Registry'
+    
+    - script: sudo docker logout
+      displayName: 'Logout from Azure Container Registry'
 
 - stage: Deploy
   displayName: Deploy the container
